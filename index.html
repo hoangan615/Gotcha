@@ -432,75 +432,75 @@ function eqMod(m,key){ // gộp hiệu ứng của CẢ BỘ trang bị
 const MOVES = {
   // Thường ⭐
   cao_xe:{n:"Cào Xé",t:"Thường",p:40}, huc_manh:{n:"Húc Mạnh",t:"Thường",p:60},
-  lien_hoan:{n:"Liên Hoàn Trảm",t:"Thường",p:25,eff:{multi:[2,3]}},
+  lien_hoan:{n:"Liên Hoàn Trảm",t:"Thường",p:32,eff:{multi:[2,3]}},
   toc_kich:{n:"Tốc Biến Kích",t:"Thường",p:50,eff:{pri:1}},
-  noi_cong:{n:"Nội Công Tâm Pháp",t:"Thường",p:0,eff:{buffAtk:1.25,buffDef:1.25}},
-  xa_than:{n:"Xả Thân Kích",t:"Thường",p:95,eff:{recoil:.25}},
+  noi_cong:{n:"Nội Công Tâm Pháp",t:"Thường",p:0,eff:{buffAtk:1.45,buffDef:1.45}},
+  xa_than:{n:"Xả Thân Kích",t:"Thường",p:95,eff:{recoil:.2}},
   // Hỏa 🔥
   dom_lua:{n:"Đốm Lửa",t:"Hỏa",p:45},
-  hoa_tien:{n:"Hỏa Tiễn Liên Châu",t:"Hỏa",p:28,eff:{multi:[2,3]}},
+  hoa_tien:{n:"Hỏa Tiễn Liên Châu",t:"Hỏa",p:34,eff:{multi:[2,3]}},
   hoa_cau:{n:"Hỏa Cầu",t:"Hỏa",p:65},
-  thieu_dot:{n:"Thiêu Đốt",t:"Hỏa",p:50,eff:{debuffAtk:.75}},
+  thieu_dot:{n:"Thiêu Đốt",t:"Hỏa",p:50,eff:{debuffAtk:.65}},
   cuu_vi_hoa:{n:"Cửu Vĩ Hỏa Diệm",t:"Hỏa",p:90},
-  phuong_vu:{n:"Phượng Vũ Trùng Sinh",t:"Hỏa",p:0,eff:{heal:.5}},
-  hoa_diem_son:{n:"Hỏa Diệm Sơn",t:"Hỏa",p:110,eff:{recoil:.25}},
+  phuong_vu:{n:"Phượng Vũ Trùng Sinh",t:"Hỏa",p:0,eff:{heal:.65}},
+  hoa_diem_son:{n:"Hỏa Diệm Sơn",t:"Hỏa",p:110,eff:{recoil:.2}},
   // Thủy 💧
   nuoc_ban:{n:"Nước Bắn",t:"Thủy",p:45},
-  thuy_kiem:{n:"Thủy Kiếm Trảm",t:"Thủy",p:55,eff:{crit:.2}},
+  thuy_kiem:{n:"Thủy Kiếm Trảm",t:"Thủy",p:55,eff:{crit:.28}},
   song_cuon:{n:"Sóng Cuộn",t:"Thủy",p:65},
-  bot_chua:{n:"Bọt Chữa Thương",t:"Thủy",p:0,eff:{heal:.5}},
+  bot_chua:{n:"Bọt Chữa Thương",t:"Thủy",p:0,eff:{heal:.65}},
   thuy_trieu:{n:"Thủy Triều Nộ",t:"Thủy",p:90},
   dai_hong_thuy:{n:"Đại Hồng Thủy",t:"Thủy",p:110},
   // Mộc 🌿
   la_bay:{n:"Lá Bay",t:"Mộc",p:45},
-  hat_no:{n:"Hạt Nổ Liên Hoàn",t:"Mộc",p:28,eff:{multi:[2,3]}},
-  day_leo:{n:"Dây Leo Hút",t:"Mộc",p:60,eff:{drain:.5}},
-  gai_doc:{n:"Gai Độc",t:"Mộc",p:50,eff:{debuffDef:.75}},
-  quang_hop:{n:"Quang Hợp",t:"Mộc",p:0,eff:{heal:.5}},
+  hat_no:{n:"Hạt Nổ Liên Hoàn",t:"Mộc",p:34,eff:{multi:[2,3]}},
+  day_leo:{n:"Dây Leo Hút",t:"Mộc",p:60,eff:{drain:.65}},
+  gai_doc:{n:"Gai Độc",t:"Mộc",p:50,eff:{debuffDef:.65}},
+  quang_hop:{n:"Quang Hợp",t:"Mộc",p:0,eff:{heal:.65}},
   rung_thieng:{n:"Rừng Thiêng Nộ",t:"Mộc",p:85},
   co_thu_tran:{n:"Cổ Thụ Trấn Áp",t:"Mộc",p:105},
   // Lôi ⚡
   tia_dien:{n:"Tia Điện",t:"Lôi",p:45},
   dien_quang:{n:"Điện Quang Thạch Hỏa",t:"Lôi",p:50,eff:{pri:1}},
   sam_set:{n:"Sấm Sét",t:"Lôi",p:70},
-  tinh_dien:{n:"Tĩnh Điện Trường",t:"Lôi",p:45,eff:{debuffAtk:.8}},
+  tinh_dien:{n:"Tĩnh Điện Trường",t:"Lôi",p:45,eff:{debuffAtk:.7}},
   loi_dinh:{n:"Lôi Đình Vạn Quân",t:"Lôi",p:95},
   thien_loi:{n:"Thiên Lôi Giáng Thế",t:"Lôi",p:115},
   // Thổ 🪨
   da_lan:{n:"Đá Lăn",t:"Thổ",p:60},
-  kim_thach:{n:"Kim Thạch Trảm",t:"Thổ",p:55,eff:{crit:.2}},
-  bao_cat:{n:"Bão Cát Mù Trời",t:"Thổ",p:45,eff:{debuffAtk:.8}},
-  thach_giap:{n:"Thạch Giáp Hộ Thân",t:"Thổ",p:0,eff:{buffDef:1.5}},
+  kim_thach:{n:"Kim Thạch Trảm",t:"Thổ",p:55,eff:{crit:.28}},
+  bao_cat:{n:"Bão Cát Mù Trời",t:"Thổ",p:45,eff:{debuffAtk:.7}},
+  thach_giap:{n:"Thạch Giáp Hộ Thân",t:"Thổ",p:0,eff:{buffDef:1.8}},
   dia_chan:{n:"Địa Chấn",t:"Thổ",p:85},
   nui_do:{n:"Ngũ Hành Sơn Đổ",t:"Thổ",p:105},
   // Phong 🌪️
   gio_cat:{n:"Gió Cắt",t:"Phong",p:45},
-  phong_nhan:{n:"Phong Nhận Liên Kích",t:"Phong",p:28,eff:{multi:[2,3]}},
+  phong_nhan:{n:"Phong Nhận Liên Kích",t:"Phong",p:34,eff:{multi:[2,3]}},
   loc_xoay:{n:"Lốc Xoáy",t:"Phong",p:65},
-  vu_dieu_gio:{n:"Vũ Điệu Cuồng Phong",t:"Phong",p:0,eff:{buffAtk:1.5}},
+  vu_dieu_gio:{n:"Vũ Điệu Cuồng Phong",t:"Phong",p:0,eff:{buffAtk:1.8}},
   cuong_phong:{n:"Cuồng Phong Trảm",t:"Phong",p:90},
   thien_phong:{n:"Thiên Phong Vạn Nhẫn",t:"Phong",p:105},
   // Băng ❄️
   bang_tien:{n:"Băng Tiễn",t:"Băng",p:50},
-  bang_lien:{n:"Băng Trụ Liên Kích",t:"Băng",p:28,eff:{multi:[2,3]}},
-  suong_gia:{n:"Sương Giá Bám Thân",t:"Băng",p:45,eff:{debuffAtk:.8}},
+  bang_lien:{n:"Băng Trụ Liên Kích",t:"Băng",p:34,eff:{multi:[2,3]}},
+  suong_gia:{n:"Sương Giá Bám Thân",t:"Băng",p:45,eff:{debuffAtk:.7}},
   bao_tuyet:{n:"Bão Tuyết",t:"Băng",p:70},
   bang_phong:{n:"Băng Phong Trụ",t:"Băng",p:90},
   tuyet_doi:{n:"Tuyệt Đối Không Độ",t:"Băng",p:110},
   // U Minh 🌑
   can_trom:{n:"Cắn Trộm",t:"U Minh",p:50},
-  doc_thu:{n:"Độc Thủ Ám Sát",t:"U Minh",p:55,eff:{crit:.2}},
-  hut_hon:{n:"Hút Hồn",t:"U Minh",p:65,eff:{drain:.5}},
+  doc_thu:{n:"Độc Thủ Ám Sát",t:"U Minh",p:55,eff:{crit:.28}},
+  hut_hon:{n:"Hút Hồn",t:"U Minh",p:65,eff:{drain:.65}},
   bong_dem:{n:"Bóng Đêm Nuốt Chửng",t:"U Minh",p:70},
-  nguyen_rua:{n:"Nguyền Rủa",t:"U Minh",p:0,eff:{debuffAtk:.75,debuffDef:.75}},
+  nguyen_rua:{n:"Nguyền Rủa",t:"U Minh",p:0,eff:{debuffAtk:.65,debuffDef:.65}},
   am_anh:{n:"Ám Ảnh Kinh Hoàng",t:"U Minh",p:90},
   u_minh_tram:{n:"U Minh Trảm",t:"U Minh",p:105},
   // Long 🐉
-  long_trao:{n:"Long Trảo Liên Kích",t:"Long",p:35,eff:{multi:[2,3]}},
+  long_trao:{n:"Long Trảo Liên Kích",t:"Long",p:42,eff:{multi:[2,3]}},
   long_khi:{n:"Long Khí",t:"Long",p:75},
-  long_uy:{n:"Long Uy Chấn Thiên",t:"Long",p:0,eff:{buffAtk:1.5}},
+  long_uy:{n:"Long Uy Chấn Thiên",t:"Long",p:0,eff:{buffAtk:1.8}},
   long_vu:{n:"Long Vũ Cuồng Phong",t:"Long",p:110},
-  long_than_pha:{n:"Long Thần Phá Thiên",t:"Long",p:130,eff:{recoil:.3}}
+  long_than_pha:{n:"Long Thần Phá Thiên",t:"Long",p:130,eff:{recoil:.22}}
 };
 
 /* ================= SPECIES =================
@@ -732,10 +732,10 @@ const RANKS=[null,
   {n:"Thánh Phẩm",c:"🔴"},{n:"Cổ Phẩm",c:"🟤"},{n:"Uyên Phẩm",c:"⚫"},
   {n:"Chân Phẩm",c:"💠"},{n:"Bảo Phẩm",c:"💎"},{n:"Diệu Phẩm",c:"🌟"},
   {n:"Linh Diệu Phẩm",c:"✨"},{n:"Tuyệt Phẩm",c:"🌈"},{n:"Chí Tôn Phẩm",c:"👑"}];
-/* Nhân chỉ số chính theo phẩm — tuyến tính 1.0 → 2.0 qua 15 bậc, KHÔNG vượt quá ×2 */
-const RANK_MULT=[0,1.00,1.07,1.14,1.21,1.29,1.36,1.43,1.50,1.57,1.64,1.71,1.79,1.86,1.93,2.00];
-/* Cộng thêm (flat) cho 4 chỉ số phụ Chí Mạng/Chính Xác/Né Tránh/Kháng, tuyến tính 0 → 21 */
-const RANK_BONUS2=[0,0,1,3,4,6,7,9,10,12,13,15,16,18,19,21];
+/* Nhân chỉ số chính theo phẩm — tuyến tính 1.0 → 5.0 qua 15 bậc, tối đa ×5 */
+const RANK_MULT=[0,1.00,1.29,1.57,1.86,2.14,2.43,2.71,3.00,3.29,3.57,3.86,4.14,4.43,4.71,5.00];
+/* Cộng thêm (flat) cho 4 chỉ số phụ Chí Mạng/Chính Xác/Né Tránh/Kháng, tuyến tính 0 → 32 (được ghim bởi các mức clamp trong recalc) */
+const RANK_BONUS2=[0,0,2,5,7,9,11,14,16,18,21,23,25,27,30,32];
 const RANK_CACHE={};
 /* 7 thần thú huyền thoại nguyên bản — luôn giữ sàn phẩm cao dù chuỗi tiến hóa 10 bậc tự sinh
    của loài khác có thể vượt tổng chỉ số thô (percentile thay đổi theo quy mô đàn 445 loài) */
@@ -931,7 +931,7 @@ function recalc(m){
   const sb=fullSet(m)?SET_BONUS:1;
   const ta=tRank(m,"tinh_anh")?1+tVal(m,"tinh_anh")/100:1;
   const rb=RANK_BONUS2[m.rk||1];
-  m.maxHp=Math.floor((Math.floor(s.hp*2*m.lvl/50*rm)+m.lvl+12+m.alloc.hp*3)*eqHp*sb*ta);
+  m.maxHp=Math.floor((Math.floor((s.hp*2*m.lvl/50+m.lvl)*rm)+12+m.alloc.hp*3)*eqHp*sb*ta);
   m.hp=Math.max(1,Math.min(m.maxHp,Math.floor(m.maxHp*ratio)));
   m.atk=Math.floor((Math.floor(s.atk*2*m.lvl/50*rm)+7+m.alloc.atk)*sb*ta);
   m.def=Math.floor((Math.floor(s.def*2*m.lvl/50*rm)+7+m.alloc.def)*sb*ta);
@@ -1075,7 +1075,7 @@ const G = {
   team:[], charms:6, gems:3, books:2, badges:0, touchMode:true, items:{},
   eggs:{trung_thuong:1,trung_hiem:0,trung_huyen:0},
   box:[], boxArm:-1, batchArm:0, pity:0,
-  losses:0, rescue:{newbie:false,legend:false}, saved:null, releaseArm:false,
+  losses:0, rescue:{newbie:false,legend:false}, saved:null, releaseArm:false, resetArm:-1,
   curLevel:0, curStage:0, curLevelCache:-1,
   battle:null, busy:false, afterReward:null,
 
@@ -1200,8 +1200,12 @@ const G = {
   /* ---------- TEAM ---------- */
   openTeam(inBattle){
     const list=$("teamList"); list.innerHTML="";
-    $("teamTitle").textContent=inBattle?"CHỌN LINH THÚ RA TRẬN":"ĐỘI HÌNH (chạm để đưa lên đầu)";
-    this.team.forEach((m,i)=>{
+    $("teamTitle").textContent=inBattle?"CHỌN LINH THÚ RA TRẬN":"ĐỘI HÌNH (chạm để đưa lên đầu) · sắp theo phẩm cao→thấp";
+    /* Hiển thị sắp theo phẩm cấp cao→thấp, nhưng mọi thao tác vẫn dùng ĐÚNG chỉ số gốc trong mảng team
+       (không đổi vị trí thật sự — vị trí 0 vẫn là thú xuất trận, chỉ đổi thứ tự NHÌN THẤY) */
+    const order=this.team.map((m,i)=>i).sort((a,b)=>this.team[b].rk-this.team[a].rk);
+    order.forEach(i=>{
+      const m=this.team[i];
       const s=SPECIES[m.sp], t=TRAITS[trait(m)];
       const el=document.createElement("div");
       el.className="team-row"+(m.hp<=0?" fainted":"");
@@ -1270,7 +1274,8 @@ const G = {
     $("boxOverlay").classList.add("active");
   },
   renderBox(){
-    $("boxTitle").textContent=`📦 KHO DỰ BỊ (${this.box.length}/100)`;
+    this.box.sort((a,b)=>b.rk-a.rk); // sắp phẩm cao→thấp; kho không có vị trí "xuất trận" nên sắp trực tiếp an toàn
+    $("boxTitle").textContent=`📦 KHO DỰ BỊ (${this.box.length}/100) · phẩm cao→thấp`;
     /* thanh thả hàng loạt theo phẩm */
     const bar=$("batchBar");
     const cnt=maxRk=>this.box.filter(m=>m.rk<=maxRk).length;
@@ -1351,7 +1356,8 @@ const G = {
       row.append(b1,bAll);
       eb.appendChild(row);
     });
-    const owned=Object.entries(this.items).filter(([,c])=>c>0);
+    const owned=Object.entries(this.items).filter(([,c])=>c>0)
+      .sort((a,b)=>(+b[0].split(":")[1])-(+a[0].split(":")[1])); // phẩm cao→thấp
     $("bagEquips").innerHTML = owned.length
       ? "<small>Giá bán: 🧧 = phẩm cấp (1-15); phẩm 🌟+ thêm +1🔮 mỗi món</small>"
       : "<i>Chưa có trang bị. Chiến thắng để nhặt đồ!</i>";
@@ -1430,18 +1436,21 @@ const G = {
   openDetail(i){
     this.detailIdx=i;
     this.releaseArm=false;
+    this.resetArm=-1;
     this.renderDetail();
     $("teamOverlay").classList.remove("active");
     $("detailOverlay").classList.add("active");
   },
   renderDetail(){
     const i=this.detailIdx, m=this.team[i], s=SPECIES[m.sp], t=TRAITS[trait(m)];
+    const totalAlloc=Object.values(m.alloc).reduce((a,b)=>a+b,0);
     const statRow=(label,key,val,alloc)=>`
       <div style="display:flex;align-items:center;gap:8px;margin:3px 0">
         <span style="width:52px;font-family:var(--px);font-size:8px">${label}</span>
-        <b style="flex:1">${val}${alloc>0?` <small style="color:var(--xanh-dam)">(+${key==="hp"?alloc*3:alloc})</small>`:""}</b>
-        <button class="green" style="font-size:8px;padding:6px 10px" ${m.pts<1?"disabled":""}
-          onclick="G.allocPt(${i},'${key}')">✚</button>
+        <b id="statval-${key}" style="flex:1">${val}${alloc>0?` <small style="color:var(--xanh-dam)">(+${key==="hp"?alloc*3:alloc})</small>`:""}</b>
+        <button class="green" style="font-size:8px;padding:6px 10px;touch-action:manipulation;user-select:none" ${m.pts<1?"disabled":""}
+          onpointerdown="G.holdStart(${i},'${key}')" onpointerup="G.holdEnd(${i},'${key}')"
+          onpointerleave="G.holdEnd(${i},'${key}')" onpointercancel="G.holdEnd(${i},'${key}')">✚</button>
       </div>`;
     const evoLine = s.evo ? `⬆️ Tiến hóa: cấp ${s.evoLv} → <b>${SPECIES[s.evo].n}</b> ${SPECIES[s.evo].e}` : "🌟 Dạng tiến hóa cuối cùng";
     if(!m.eq) m.eq={};
@@ -1457,7 +1466,8 @@ const G = {
       ? `<div style="color:var(--xanh-dam);font-weight:bold">✅ BỘ HOÀN CHỈNH (4/4): +8% TOÀN BỘ CHỈ SỐ!</div>`
       : `<div style="opacity:.7">Bộ trang bị: ${nEq}/4 — mặc đủ 4 ô để nhận +8% toàn bộ chỉ số</div>`;
     const eqCur = setLine + slotRows;
-    const owned=Object.entries(this.items).filter(([,c])=>c>0);
+    const owned=Object.entries(this.items).filter(([,c])=>c>0)
+      .sort((a,b)=>(+b[0].split(":")[1])-(+a[0].split(":")[1])); // phẩm cao→thấp
     const eqList = owned.length
       ? owned.map(([k,c])=>{ const [id,rk]=k.split(":");
           return `<button class="ghost" style="font-size:7px;padding:7px 6px;margin:2px"
@@ -1489,7 +1499,11 @@ const G = {
         <div style="font-size:10px;opacity:.7;margin-top:3px">Số ô theo phẩm thú (1-15): ⚪🟢=1 ô · 🔵🟣🟠=2 ô · 🟡🔴🟤=3 ô · ⚫💠💎=4 ô · 🌟✨🌈👑=5 ô</div>
       </div>
       <div style="background:var(--giay-toi);border:2px solid var(--muc);border-radius:5px;padding:10px">
-        <div class="center px" style="font-size:9px;margin-bottom:6px">CHỈ SỐ · Điểm tự do: <b>${m.pts}</b> ✚</div>
+        <div class="center px" style="font-size:9px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:8px">
+          <span>CHỈ SỐ · Điểm tự do: <b id="ptsRemain">${m.pts}</b> ✚</span>
+          <button class="${this.resetArm===i?"red":"ghost"}" style="font-size:7px;padding:5px 8px" ${totalAlloc<1?"disabled":""}
+            onclick="G.resetPoints(${i})">${this.resetArm===i?"⚠️ XÁC NHẬN":"↺ RESET"}</button>
+        </div>
         ${statRow("HP","hp",`${m.hp}/${m.maxHp}`,m.alloc.hp)}
         ${statRow("CÔNG","atk",m.atk,m.alloc.atk)}
         ${statRow("THỦ","def",m.def,m.alloc.def)}
@@ -1499,7 +1513,7 @@ const G = {
         ${statRow("CHÍNH XÁC","acc",m.acc+"%",m.alloc.acc)}
         ${statRow("NÉ TRÁNH","eva",m.eva+"%",m.alloc.eva)}
         ${statRow("KHÁNG","res",m.res+"%",m.alloc.res)}
-        <div class="center" style="font-size:10px;opacity:.7">✚ HP +3 · Công/Thủ/Tốc/Chí Mạng/Chính Xác/Né Tránh/Kháng +1 mỗi điểm</div>
+        <div class="center" style="font-size:10px;opacity:.7">✚ HP +3 · Công/Thủ/Tốc/Chí Mạng/Chính Xác/Né Tránh/Kháng +1 mỗi điểm · Giữ nút ✚ để tăng nhanh liên tục</div>
       </div>
       <div style="background:var(--giay-toi);border:2px solid var(--muc);border-radius:5px;padding:10px">
         <div class="px" style="font-size:9px;margin-bottom:6px">🎒 BỘ TRANG BỊ (4 Ô)</div>
@@ -1560,6 +1574,60 @@ const G = {
     if(key==="hp"){ const old=m.maxHp; recalc(m); m.hp+=Math.max(0,m.maxHp-old); }
     else recalc(m);
     Snd.buff();
+    this.save();
+    this.renderDetail();
+  },
+  /* Giữ nút ✚ để tự động cộng điểm liên tục — chạm nhanh vẫn cộng 1 như cũ (không đè lẫn nhau) */
+  holdStart(i,key){
+    this._holdFired=false;
+    clearTimeout(this._holdTimer); clearInterval(this._holdInterval);
+    this._holdTimer=setTimeout(()=>{
+      this._holdFired=true;
+      this.allocPtFast(i,key); // tick đầu tiên ngay khi ngưỡng giữ được kích hoạt
+      this._holdInterval=setInterval(()=>this.allocPtFast(i,key), 80);
+    }, 350);
+  },
+  holdEnd(i,key){
+    clearTimeout(this._holdTimer); clearInterval(this._holdInterval);
+    if(!this._holdFired){
+      this.allocPt(i,key); // chạm nhanh (không giữ đủ lâu) -> cộng đúng 1 điểm như trước
+    } else {
+      this.save();
+      this.renderDetail(); // render đầy đủ 1 lần sau khi thả tay để đồng bộ toàn bộ giao diện
+    }
+  },
+  /* Cộng điểm "nhẹ" dùng khi giữ nút: chỉ cập nhật đúng 2 chỗ trên DOM, không render lại cả bảng để tránh giật/lag */
+  allocPtFast(i,key){
+    const m=this.team[i];
+    if(m.pts<1){ clearInterval(this._holdInterval); return; }
+    m.pts--; m.alloc[key]++;
+    if(key==="hp"){ const old=m.maxHp; recalc(m); m.hp+=Math.max(0,m.maxHp-old); }
+    else recalc(m);
+    Snd.buff();
+    const ptsEl=document.getElementById("ptsRemain");
+    if(ptsEl) ptsEl.textContent=m.pts;
+    const valEl=document.getElementById("statval-"+key);
+    if(valEl){
+      const isPct=["crit","acc","eva","res"].includes(key);
+      const disp = key==="hp" ? `${m.hp}/${m.maxHp}` : (isPct?m[key]+"%":m[key]);
+      const bonus = m.alloc[key]>0 ? ` <small style="color:var(--xanh-dam)">(+${key==="hp"?m.alloc[key]*3:m.alloc[key]})</small>` : "";
+      valEl.innerHTML = disp+bonus;
+    }
+    if(m.pts<1) clearInterval(this._holdInterval);
+  },
+  /* ↺ Phân phối lại điểm tự do: trả hết điểm đã cộng về pts, không mất gì cả — chạm 2 lần để xác nhận */
+  resetPoints(i){
+    const m=this.team[i];
+    const totalAlloc=Object.values(m.alloc).reduce((a,b)=>a+b,0);
+    if(totalAlloc<1) return;
+    if(this.resetArm!==i){ this.resetArm=i; Snd.debuff(); this.renderDetail(); return; }
+    this.resetArm=-1;
+    m.pts+=totalAlloc;
+    Object.keys(m.alloc).forEach(k=>m.alloc[k]=0);
+    const oldMax=m.maxHp;
+    recalc(m);
+    m.hp=m.maxHp; // hồi đầy sau khi reset để tránh tỉ lệ HP kỳ lạ do maxHp đổi
+    Snd.win();
     this.save();
     this.renderDetail();
   },
