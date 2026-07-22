@@ -75,6 +75,8 @@ button:focus-visible{outline:3px dashed var(--troi); outline-offset:2px}
 .level-node.locked{opacity:.5; filter:grayscale(.8); cursor:not-allowed}
 .level-node.done{background:#D8E8CE}
 .level-node.milestone{border-color:#8a6d00; box-shadow:0 3px 0 #8a6d00, inset 0 0 0 2px var(--vang-hoe)}
+.level-node.jump-flash{animation:jumpFlash 1.1s ease-out}
+@keyframes jumpFlash{0%,40%{box-shadow:0 0 0 4px var(--troi), 0 3px 0 var(--muc)}100%{box-shadow:0 3px 0 var(--muc)}}
 .level-node .icon{font-size:30px; width:42px; text-align:center}
 .level-node h3{font-family:var(--px); font-size:9px; margin-bottom:5px; line-height:1.6}
 .level-node p{font-size:11px}
@@ -162,6 +164,13 @@ button:focus-visible{outline:3px dashed var(--troi); outline-offset:2px}
   <!-- MAP -->
   <div class="screen" id="map">
     <div class="hud px"><span id="hudName">LÃNG KHÁCH</span><span id="hudBadges"></span></div>
+    <div style="display:flex;gap:6px;padding:0 14px 8px">
+      <input id="jumpInput" type="number" min="1" max="500" placeholder="Nhập số màn (1-500)..."
+        style="flex:1;min-width:0;padding:8px;border:2px solid var(--muc);border-radius:4px;font-family:var(--mono);font-size:12px"
+        onkeydown="if(event.key==='Enter')G.jumpToLevel()">
+      <button class="ghost" style="font-size:8px;padding:8px 10px;flex-shrink:0" onclick="G.jumpToLevel()">🔖 TỚI</button>
+      <button class="ghost" style="font-size:8px;padding:8px 10px;flex-shrink:0" onclick="G.jumpToCurrent()">📍 HIỆN TẠI</button>
+    </div>
     <div id="levelList"></div>
     <div class="map-footer">
       <button class="ghost" onclick="G.openTeam(false)">👥 ĐỘI HÌNH</button>
@@ -172,6 +181,9 @@ button:focus-visible{outline:3px dashed var(--troi); outline-offset:2px}
       <button class="ghost" onclick="G.openDex()">📖 SỔ THẦN THÚ</button>
       <button class="ghost" onclick="G.openAchv()">🏆 THÀNH TỰU</button>
       <button class="ghost" onclick="G.openSettings()">⚙️ CÀI ĐẶT</button>
+    </div>
+    <div class="map-footer" id="towerFooterRow" style="padding-top:0;display:none">
+      <button class="px" style="background:var(--vang-sang)" onclick="G.openTower()">🔄 THÁP VÔ TẬN (KỶ LỤC: <span id="towerBadgeBest">0</span>)</button>
     </div>
   </div>
 
@@ -219,6 +231,7 @@ button:focus-visible{outline:3px dashed var(--troi); outline-offset:2px}
   <div class="overlay" id="teamOverlay">
     <div class="panel">
       <h2 id="teamTitle">ĐỘI HÌNH</h2>
+      <button class="px" id="autoTeamBtn" style="display:none;font-size:8px" onclick="G.autoTeam()">🏅 XẾP ĐỘI TỐT NHẤT (TỰ ĐỘNG)</button>
       <div id="teamList"></div>
       <button class="px" id="boxBtn" style="display:none;font-size:8px" onclick="G.openBox()">📦 KHO DỰ BỊ</button>
       <div id="presetSection" style="background:var(--giay-toi);border:2px solid var(--muc);border-radius:5px;padding:8px">
@@ -239,6 +252,7 @@ button:focus-visible{outline:3px dashed var(--troi); outline-offset:2px}
       <div style="font-size:44px">📜</div>
       <p class="reward-text">Sách Kỹ Năng: <b id="bagBooks">0</b><br><small>Roll 1 chiêu thức thành chiêu ngẫu nhiên mới (ưu tiên cùng hệ) — trong màn hình chi tiết ℹ️.</small></p>
       <h2 style="margin-top:6px">🥚 TRỨNG THẦN THÚ</h2>
+      <div id="freeEggBox" style="background:var(--vang-hoe);border:2px solid var(--muc);border-radius:5px;padding:8px"></div>
       <div id="bagEggs" style="display:flex;flex-direction:column;gap:8px"></div>
       <h2 style="margin-top:6px">TRANG BỊ</h2>
       <div id="bagEquips" style="font-size:12px; line-height:1.8; text-align:left"></div>
@@ -288,9 +302,30 @@ button:focus-visible{outline:3px dashed var(--troi); outline-offset:2px}
     </div>
   </div>
 
+  <div class="overlay" id="profileOverlay">
+    <div class="panel">
+      <h2>📊 HỒ SƠ NGƯỜI CHƠI</h2>
+      <div id="profileBody" style="display:flex;flex-direction:column;gap:6px;max-height:420px;overflow-y:auto;font-size:12px;line-height:1.6"></div>
+      <button class="ghost" onclick="G.closeOverlay('profileOverlay')">ĐÓNG</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="towerOverlay">
+    <div class="panel center">
+      <h2>🔄 THÁP VÔ TẬN</h2>
+      <div style="font-size:60px" id="towerIcon">🗼</div>
+      <div style="font-size:14px">Tầng hiện tại: <b id="towerFloorNow">1</b></div>
+      <div style="font-size:14px">🏆 Kỷ lục cao nhất: <b id="towerFloorBest">0</b></div>
+      <p class="reward-text" style="font-size:11px">Mỗi tầng là 1 trận đấu trùm duy nhất, độ khó tăng vô hạn. Thua sẽ về lại Tầng 1 (kỷ lục vẫn được giữ). Toàn bộ 445 loài đều có thể xuất hiện!</p>
+      <button class="green px" onclick="G.enterTowerBattle()">⚔ VÀO TẦNG <span id="towerBtnFloor">1</span></button>
+      <button class="ghost" onclick="G.closeOverlay('towerOverlay')">ĐÓNG</button>
+    </div>
+  </div>
+
   <div class="overlay" id="settingsOverlay">
     <div class="panel">
       <h2>⚙️ CÀI ĐẶT</h2>
+      <button class="px" style="background:var(--vang-sang)" onclick="G.openProfile()">📊 XEM HỒ SƠ / THỐNG KÊ</button>
       <div style="background:var(--giay-toi);border:2px solid var(--muc);border-radius:5px;padding:10px;display:flex;align-items:center;justify-content:space-between;gap:8px">
         <span style="font-size:12px">⚡ Tốc độ trận đấu</span>
         <div style="display:flex;align-items:center;gap:8px">
@@ -298,6 +333,8 @@ button:focus-visible{outline:3px dashed var(--troi); outline-offset:2px}
           <button class="ghost" style="font-size:8px;padding:7px 10px" onclick="G.cycleSpeed()">ĐỔI</button>
         </div>
       </div>
+      <div id="checkinStatus" style="background:var(--giay-toi);border:2px solid var(--muc);border-radius:5px;padding:10px;font-size:12px;text-align:center"></div>
+      <div id="checkinCalendar" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px"></div>
       <div style="background:var(--giay-toi);border:2px solid var(--muc);border-radius:5px;padding:10px">
         <div style="font-size:12px;margin-bottom:6px"><b>💾 Xuất mã lưu</b> — sao chép mã này để lưu trên thiết bị khác</div>
         <textarea id="exportCode" readonly onclick="this.select()"
@@ -833,6 +870,8 @@ function rollRank(lvl, floor){
   return Math.max(floor||1, r);
 }
 function rankBadge(m){ return RANKS[m.rk||1].c }
+const SHINY_RATE=1/150;
+function dispSprite(m){ return (m.shiny?"✨":"")+SPECIES[m.sp].e }
 
 /* ================= 20 LEVELS ================= */
 const LEVELS = [
@@ -946,6 +985,20 @@ const ROMAN=["","I","II","III","IV","V","VI","VII","VIII","IX","X"];
   }
 })();
 const STAGES_PER_LEVEL = 4;
+
+/* ================= 🔄 THÁP VÔ TẬN (mở khóa sau khi qua 500 màn) =================
+   Sinh tầng động (không lưu mảng), xác định theo số tầng — cùng 1 tầng luôn ra cùng dữ liệu. */
+const TOWER_BOSS_NAMES=["Tháp Chủ","Hộ Tháp Thần","Vô Cực Chiến Thần","Thiên Ma Tôn","Tuyệt Đỉnh Cao Thủ","Hư Không Chi Chủ"];
+function towerRng(seed){ let s=(seed*2654435761)>>>0; return ()=>{ s=(s*1664525+1013904223)>>>0; return s/4294967296; }; }
+function genTowerFloor(floor){
+  const r=towerRng(floor*97+13);
+  const lo=400+Math.floor(floor*2.2), hi=lo+5;
+  const size=Math.min(10, 3+Math.floor(floor/15));
+  const pool=Object.keys(SPECIES);
+  const team=[];
+  for(let b=0;b<size;b++){ const k=pool[Math.floor(r()*pool.length)]; team.push([k, hi+b]); }
+  return {tr:`${TOWER_BOSS_NAMES[Math.floor(r()*TOWER_BOSS_NAMES.length)]} · Tầng ${floor}`, team, lo, hi};
+}
 const MAX_MOVES = 6;
 
 /* ================= AUDIO ================= */
@@ -986,6 +1039,7 @@ function makeMon(spId, lvl){
   const s=SPECIES[spId];
   const m={
     uid: Date.now().toString(36)+Math.random().toString(36).slice(2,8),
+    shiny: Math.random()<SHINY_RATE, locked:false,
     sp:spId, lvl, maxHp:0, hp:0, atk:0, def:0, spd:0,
     xp:0, xpNext:lvl*lvl*4,
     bAtk:1, bDef:1, bSpd:1, revived:false, warded:false,
@@ -1183,7 +1237,27 @@ const ACHIEVEMENTS=[
   {id:"wins_100",e:"⚔️",n:"Chiến Binh Kỳ Cựu",d:"Thắng 100 trận",
     cond:G=>(G.battlesWon||0)>=100, reward:{charms:15}},
   {id:"wins_1000",e:"🗡️",n:"Không Thể Ngăn Cản",d:"Thắng 1000 trận",
-    cond:G=>(G.battlesWon||0)>=1000, reward:{gems:25}}
+    cond:G=>(G.battlesWon||0)>=1000, reward:{gems:25}},
+  {id:"shiny_1",e:"✨",n:"Ánh Sáng Đầu Tiên",d:"Sở hữu 1 thần thú biến thể hiếm (Shiny)",
+    cond:G=>[...G.team,...G.box].some(m=>m.shiny), reward:{gems:8}},
+  {id:"shiny_5",e:"🌟",n:"Săn Ánh Sáng",d:"Sở hữu 5 thần thú biến thể hiếm (Shiny)",
+    cond:G=>[...G.team,...G.box].filter(m=>m.shiny).length>=5, reward:{gems:20}}
+];
+
+/* ================= ĐIỂM DANH & THƯỞNG QUAY LẠI ================= */
+const CHECKIN_REWARDS={
+  1:{e:"🧧",n:"+3 Bùa Thu Phục",r:{charms:3}},
+  2:{e:"🧧",n:"+5 Bùa Thu Phục",r:{charms:5}},
+  3:{e:"🔮",n:"+2 Ngọc Chuyển Chất",r:{gems:2}},
+  4:{e:"📜",n:"+2 Sách Kỹ Năng",r:{books:2}},
+  5:{e:"🔮",n:"+4 Ngọc Chuyển Chất",r:{gems:4}},
+  6:{e:"🥚",n:"+1 Trứng Thường",r:{eggs:{trung_thuong:1}}},
+  7:{e:"🥚",n:"+1 Trứng Hiếm · +5 Ngọc · +5 Bùa",r:{gems:5,charms:5,eggs:{trung_hiem:1}}}
+};
+const COMEBACK_TIERS=[
+  {days:30,label:"30+ ngày",r:{charms:30,gems:15,eggs:{trung_huyen:1}}},
+  {days:7, label:"7+ ngày", r:{charms:15,gems:8,eggs:{trung_hiem:1}}},
+  {days:3, label:"3+ ngày", r:{charms:8,gems:3}}
 ];
 
 /* ================= GAME ================= */
@@ -1193,12 +1267,18 @@ const G = {
   box:[], boxArm:-1, batchArm:0, pity:0, speed:1,
   dex:{seen:{},caught:{}}, achv:{}, battlesWon:0, eggsOpened:0,
   presets:{A:null,B:null,C:null}, boxFilterType:null, boxFilterText:"",
+  checkin:{lastDate:null,streak:0}, _dailyChecked:false,
+  freeEgg:{lastClaim:0}, _freeEggTimer:null,
+  tower:{floor:1,best:0}, inTower:false,
+  totalDamageDealt:0, typeUsage:{}, winStreak:0, bestWinStreak:0,
+  catchAttempts:0, catchSuccess:0, releasedCount:0, firstPlayDate:null,
   losses:0, rescue:{newbie:false,legend:false}, saved:null, releaseArm:false, resetArm:-1,
   curLevel:0, curStage:0, curLevelCache:-1,
   battle:null, busy:false, afterReward:null,
 
   showScreen(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); $(id).classList.add("active"); },
   closeOverlay(id){
+    if(id==="bagOverlay") clearInterval(this._freeEggTimer);
     if(id==="teamOverlay" && this.battle && !this.battle.allyOut && this.team[0] && this.team[0].hp<=0){
       const alive=this.team.findIndex(m=>m.hp>0);
       if(alive>0){ [this.team[0],this.team[alive]]=[this.team[alive],this.team[0]];
@@ -1218,6 +1298,11 @@ const G = {
   },
   openSettings(){
     const lbl=$("speedLabel"); if(lbl) lbl.textContent=this.speed+"x";
+    const today=new Date().toISOString().slice(0,10);
+    const doneToday = this.checkin && this.checkin.lastDate===today;
+    $("checkinStatus").innerHTML=`📅 Điểm danh: chuỗi <b>${(this.checkin&&this.checkin.streak)||0}</b> ngày liên tiếp<br>`+
+      (doneToday?"<small>✅ Đã điểm danh hôm nay</small>":"<small>Quay lại vào ngày mới để nhận thưởng!</small>");
+    this.renderCheckinCalendar();
     $("exportCode").value="";
     $("settingsOverlay").classList.add("active");
   },
@@ -1275,9 +1360,9 @@ const G = {
       const el=document.createElement("div"); el.className="starter-card";
       el.innerHTML=`<div class="sprite">${s.e}</div><div><h3>${s.n} ${TYPES[s.t]}</h3><p>${desc}</p>
         <span class="trait-chip">✦ ${TRAITS[s.tr].n}: ${traitDesc(s.tr,3)} (phẩm roll ngẫu nhiên)</span></div>`;
-      el.onclick=()=>{ Snd.catchOk(); G.team=[makeMon(id,5)]; G.markCaught(id); G.save(); G.showReward("🎉","LINH THÚ ĐẦU TIÊN!",
+      el.onclick=()=>{ Snd.catchOk(); G.team=[makeMon(id,5)]; G.markCaught(id); if(!G.firstPlayDate) G.firstPlayDate=Date.now(); G.save(); G.showReward("🎉","LINH THÚ ĐẦU TIÊN!",
         `<b>${s.n}</b> đã gia nhập đội!<br>Đặc chất: <b>${TRAITS[s.tr].n}</b><br>Chinh phục 20 vùng đất thiêng và đối mặt Long Vương Chí Tôn!`,
-        ()=>{ G.renderMap(); G.showScreen("map"); }); };
+        ()=>{ G.renderMap(); G.showScreen("map"); G.checkDailyLogin(); }); };
       list.appendChild(el);
     });
     this.showScreen("starter");
@@ -1286,6 +1371,11 @@ const G = {
   /* ---------- MAP ---------- */
   renderMap(){
     $("hudBadges").textContent=`🏅 ${this.badges}/${TOTAL_LEVELS}`;
+    const tRow=$("towerFooterRow");
+    if(tRow){
+      tRow.style.display = this.badges>=TOTAL_LEVELS ? "flex" : "none";
+      const tb=$("towerBadgeBest"); if(tb) tb.textContent=(this.tower&&this.tower.best)||0;
+    }
     const list=$("levelList"); list.innerHTML="";
     LEVELS.forEach((L,i)=>{
       const locked=i>this.badges, done=i<this.badges, mile=(i+1)%5===0;
@@ -1296,6 +1386,26 @@ const G = {
       if(!locked) el.onclick=()=>{ Snd.select(); G.openLevel(i); };
       list.appendChild(el);
     });
+  },
+  /* 🔖 Nhảy nhanh tới màn theo số nhập, hoặc 📍 tới màn hiện tại */
+  jumpToLevel(){
+    const raw=($("jumpInput")&&$("jumpInput").value)||"";
+    const val=parseInt(raw,10);
+    if(!val||val<1||val>TOTAL_LEVELS){ Snd.catchFail(); return; }
+    Snd.select();
+    this.scrollToLevel(val-1);
+  },
+  jumpToCurrent(){
+    Snd.select();
+    this.scrollToLevel(Math.min(this.badges,TOTAL_LEVELS-1));
+  },
+  scrollToLevel(idx){
+    const list=$("levelList");
+    const el=list.children[idx];
+    if(!el) return;
+    el.scrollIntoView({block:"center",behavior:"smooth"});
+    el.classList.remove("jump-flash"); void el.offsetWidth;
+    el.classList.add("jump-flash");
   },
 
   openLevel(i){
@@ -1382,8 +1492,8 @@ const G = {
       const s=SPECIES[m.sp], t=TRAITS[trait(m)];
       const el=document.createElement("div");
       el.className="team-row"+(m.hp<=0?" fainted":"");
-      el.innerHTML=`<div class="sprite">${s.e}</div>
-        <div class="info">${rankBadge(m)} <b>${s.n}</b> ${TYPES[s.t]} &nbsp;Cấp ${m.lvl}<br>
+      el.innerHTML=`<div class="sprite">${dispSprite(m)}</div>
+        <div class="info">${rankBadge(m)}${m.locked?"🔒":""} <b>${m.shiny?"✨ ":""}${s.n}</b> ${TYPES[s.t]} &nbsp;Cấp ${m.lvl}<br>
         <span class="tr">${traitsOf(m).map(x=>`✦${RANKS[x.rk].c}${TRAITS[x.k].n}`).join(" ")}</span><br>
         HP ${m.hp}/${m.maxHp} · ${m.moves.map(k=>MOVES[k].n).join(", ")}
         <div class="minihp"><i style="width:${m.hp/m.maxHp*100}%"></i></div></div>`;
@@ -1422,9 +1532,29 @@ const G = {
     });
     $("boxBtn").style.display=inBattle?"none":"block";
     $("boxBtn").textContent=`📦 KHO DỰ BỊ (${this.box.length})`;
+    $("autoTeamBtn").style.display=inBattle?"none":"block";
     $("presetSection").style.display=inBattle?"none":"block";
     if(!inBattle) this.renderPresets();
     $("teamOverlay").classList.add("active");
+  },
+  /* 🏅 Tự động chọn 6 thần thú phẩm cao nhất từ đội + kho, phần còn lại xuống kho */
+  autoTeam(){
+    const pool=[...this.team,...this.box];
+    if(pool.length<=1){ Snd.catchFail(); return; }
+    const power=m=>{ const s=SPECIES[m.sp]; return s.hp+s.atk+s.def+s.spd; };
+    const locked=pool.filter(m=>m.locked).slice(0,6);
+    const rest=pool.filter(m=>!m.locked);
+    rest.sort((a,b)=> b.rk-a.rk || power(b)-power(a) || b.lvl-a.lvl);
+    const needed=Math.max(0,6-locked.length);
+    this.team=[...locked, ...rest.slice(0,needed)];
+    const usedUids=new Set(this.team.map(m=>m.uid));
+    this.box=pool.filter(m=>!usedUids.has(m.uid));
+    Snd.win();
+    this.save();
+    const lockNote=locked.length?`<br><small>🔒 ${locked.length} thú đang khóa được giữ nguyên trong đội.</small>`:"";
+    this.showReward("🏅","ĐÃ XẾP ĐỘI TỐI ƯU!",
+      "Đã chọn 6 thần thú phẩm cao nhất (và mạnh nhất khi cùng phẩm) từ đội + kho dự bị. Phần còn lại đã chuyển vào kho."+lockNote,
+      ()=>{ G.openTeam(false); });
   },
 
   /* ---------- 📋 ĐỘI HÌNH MẪU ---------- */
@@ -1504,7 +1634,7 @@ const G = {
     $("boxTitle").textContent=`📦 KHO DỰ BỊ (${this.box.length}/100) · phẩm cao→thấp`;
     /* thanh thả hàng loạt theo phẩm (luôn áp dụng trên TOÀN BỘ kho, không phụ thuộc bộ lọc) */
     const bar=$("batchBar");
-    const cnt=maxRk=>this.box.filter(m=>m.rk<=maxRk).length;
+    const cnt=maxRk=>this.box.filter(m=>m.rk<=maxRk && !m.locked).length;
     const mk=(maxRk)=>{
       const n=cnt(maxRk);
       const armed=this.batchArm===maxRk;
@@ -1545,8 +1675,8 @@ const G = {
       const s=SPECIES[m.sp];
       const el=document.createElement("div");
       el.className="team-row";
-      el.innerHTML=`<div class="sprite">${s.e}</div>
-        <div class="info">${RANKS[m.rk].c} <b>${s.n}</b> ${TYPES[s.t]} · Cấp ${m.lvl}<br>
+      el.innerHTML=`<div class="sprite">${dispSprite(m)}</div>
+        <div class="info">${RANKS[m.rk].c}${m.locked?"🔒":""} <b>${m.shiny?"✨ ":""}${s.n}</b> ${TYPES[s.t]} · Cấp ${m.lvl}<br>
         ${traitsOf(m).map(x=>"✦"+RANKS[x.rk].c+TRAITS[x.k].n).join(" ")}${eqItems(m).length?` · 🎒${eqItems(m).length}`:""}</div>`;
       const btns=document.createElement("div");
       btns.style.cssText="display:flex;flex-direction:column;gap:4px;flex-shrink:0";
@@ -1554,21 +1684,36 @@ const G = {
       up.className="green"; up.style.cssText="font-size:7px;padding:6px";
       up.textContent="⬆ ĐỘI"; up.disabled=this.team.length>=6;
       up.onclick=()=>G.toTeam(bi);
+      const lk=document.createElement("button");
+      lk.className=m.locked?"green":"ghost"; lk.style.cssText="font-size:7px;padding:6px";
+      lk.textContent=m.locked?"🔒":"🔓";
+      lk.onclick=()=>G.toggleLockBox(bi);
       const rl=document.createElement("button");
       rl.className=this.boxArm===bi?"red":"ghost"; rl.style.cssText="font-size:7px;padding:6px";
       rl.textContent=this.boxArm===bi?"⚠️":"🕊️";
+      rl.disabled=m.locked;
       rl.onclick=()=>G.releaseBoxOne(bi);
-      btns.append(up,rl);
+      btns.append(up,lk,rl);
       el.appendChild(btns);
       list.appendChild(el);
     });
   },
+  toggleLockBox(bi){
+    const m=this.box[bi];
+    if(!m) return;
+    m.locked=!m.locked;
+    Snd.select();
+    this.save();
+    this.renderBox();
+  },
   releaseBoxOne(bi){
+    if(this.box[bi] && this.box[bi].locked){ Snd.catchFail(); return; }
     if(this.boxArm!==bi){ this.boxArm=bi; Snd.debuff(); this.renderBox(); return; }
     this.boxArm=-1;
     const m=this.box.splice(bi,1)[0];
     eqItems(m).forEach(it=>this.addItem(it.id,it.rk));
     this.charms++; if(m.rk>=9) this.gems++;
+    this.releasedCount=(this.releasedCount||0)+1;
     Snd.heal();
     this.save();
     this.renderBox();
@@ -1576,12 +1721,13 @@ const G = {
   releaseBatch(maxRk){
     if(this.batchArm!==maxRk){ this.batchArm=maxRk; this.boxArm=-1; Snd.debuff(); this.renderBox(); return; }
     this.batchArm=0;
-    const gone=this.box.filter(m=>m.rk<=maxRk);
+    const gone=this.box.filter(m=>m.rk<=maxRk && !m.locked);
     if(!gone.length) return;
-    this.box=this.box.filter(m=>m.rk>maxRk);
+    this.box=this.box.filter(m=>!(m.rk<=maxRk && !m.locked));
     let ch=0,gm=0;
     gone.forEach(m=>{ eqItems(m).forEach(it=>this.addItem(it.id,it.rk)); ch++; if(m.rk>=9) gm++; });
     this.charms+=ch; this.gems+=gm;
+    this.releasedCount=(this.releasedCount||0)+gone.length;
     Snd.win();
     this.save();
     this.closeOverlay("boxOverlay");
@@ -1641,6 +1787,9 @@ const G = {
       row.append(s1,sa);
       $("bagEquips").appendChild(row);
     });
+    this.renderFreeEgg();
+    clearInterval(this._freeEggTimer);
+    this._freeEggTimer=setInterval(()=>this.renderFreeEgg(),1000);
     $("bagOverlay").classList.add("active");
   },
 
@@ -1728,16 +1877,161 @@ const G = {
       if(a.cond(this)){
         this.achv[a.id]=true;
         fresh.push(a);
-        const r=a.reward||{};
-        if(r.charms) this.charms+=r.charms;
-        if(r.gems) this.gems+=r.gems;
-        if(r.books) this.books+=r.books;
-        if(r.eggs) Object.entries(r.eggs).forEach(([t,n])=>this.addEgg(t,n));
+        this.applyRewardPack(a.reward);
       }
     });
     if(!fresh.length) return "";
     Snd.win();
     return "<br><br>🏆 <b>THÀNH TỰU MỚI:</b><br>"+fresh.map(a=>`${a.e} <b>${a.n}</b> — ${a.d}`).join("<br>");
+  },
+
+  /* ---------- 📅 ĐIỂM DANH HÀNG NGÀY ---------- */
+  /* Áp thưởng theo khuôn dữ liệu chung {charms,gems,books,eggs:{type:n}} — dùng lại cho điểm danh/thành tựu/quay lại/trứng miễn phí */
+  applyRewardPack(rw){
+    if(!rw) return;
+    if(rw.charms) this.charms+=rw.charms;
+    if(rw.gems) this.gems+=rw.gems;
+    if(rw.books) this.books+=rw.books;
+    if(rw.eggs) Object.entries(rw.eggs).forEach(([t,n])=>this.addEgg(t,n));
+  },
+
+  /* ---------- 📅 ĐIỂM DANH HÀNG NGÀY + 🎁 THƯỞNG QUAY LẠI ---------- */
+  checkDailyLogin(){
+    if(this._dailyChecked) return;
+    this._dailyChecked=true;
+    const today=new Date().toISOString().slice(0,10);
+    if(!this.checkin) this.checkin={lastDate:null,streak:0};
+    if(this.checkin.lastDate===today) return; // đã điểm danh hôm nay
+    const prevDate=this.checkin.lastDate;
+    const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
+    const daysSince = prevDate ? Math.round((new Date(today)-new Date(prevDate))/86400000) : 0;
+    this.checkin.streak = (prevDate===yesterday) ? this.checkin.streak+1 : 1;
+    this.checkin.lastDate=today;
+    const day=((this.checkin.streak-1)%7)+1;
+    const cr=CHECKIN_REWARDS[day];
+    this.applyRewardPack(cr.r);
+    let comebackTxt="";
+    const tier=COMEBACK_TIERS.find(t=>daysSince>=t.days);
+    if(tier){
+      this.applyRewardPack(tier.r);
+      const parts=[];
+      if(tier.r.charms) parts.push(`+${tier.r.charms}🧧`);
+      if(tier.r.gems) parts.push(`+${tier.r.gems}🔮`);
+      if(tier.r.eggs) Object.entries(tier.r.eggs).forEach(([t2,n])=>parts.push(`+${n} ${EGGS[t2].c}🥚`));
+      comebackTxt=`<br><br>🎁 <b>Chào mừng trở lại sau ${daysSince} ngày!</b><br>${parts.join(" ")}`;
+    }
+    Snd.win();
+    this.save();
+    const weekDone = this.checkin.streak%7===0 ? "<br><br>🎉 <b>Hoàn thành 1 tuần điểm danh liên tiếp!</b>" : "";
+    this.showReward("📅",`ĐIỂM DANH NGÀY ${day}/7!`,
+      `Chuỗi liên tiếp: <b>${this.checkin.streak}</b> ngày<br><br>${cr.e} Nhận: <b>${cr.n}</b>${weekDone}${comebackTxt}`,
+      ()=>{});
+  },
+  renderCheckinCalendar(){
+    const today=new Date().toISOString().slice(0,10);
+    const doneToday = this.checkin && this.checkin.lastDate===today;
+    const curDay = (this.checkin&&this.checkin.streak) ? ((this.checkin.streak-1)%7)+1 : 0;
+    let out="";
+    for(let d=1;d<=7;d++){
+      const r=CHECKIN_REWARDS[d];
+      const isDone = d===curDay && doneToday;
+      const isNext = d===curDay && !doneToday;
+      out+=`<div style="text-align:center;font-size:8px;padding:5px 2px;border-radius:4px;border:2px solid var(--muc);
+        background:${isDone?"#D8E8CE":isNext?"var(--vang-sang)":"var(--giay-do)"}">
+        <div style="font-size:16px">${r.e}</div>N${d}${isDone?" ✅":isNext?" 👈":""}</div>`;
+    }
+    $("checkinCalendar").innerHTML=out;
+  },
+
+  /* ---------- 🎰 TRỨNG MIỄN PHÍ HÀNG NGÀY (hồi sau 20 giờ) ---------- */
+  FREE_EGG_COOLDOWN: 20*3600*1000,
+  freeEggReady(){
+    const last=(this.freeEgg&&this.freeEgg.lastClaim)||0;
+    return Date.now()-last>=this.FREE_EGG_COOLDOWN;
+  },
+  freeEggRemainMs(){
+    const last=(this.freeEgg&&this.freeEgg.lastClaim)||0;
+    return Math.max(0, this.FREE_EGG_COOLDOWN-(Date.now()-last));
+  },
+  claimFreeEgg(){
+    if(!this.freeEggReady()){ Snd.catchFail(); return; }
+    if(!this.freeEgg) this.freeEgg={lastClaim:0};
+    this.freeEgg.lastClaim=Date.now();
+    const roll=Math.random();
+    const type = roll<.7?"trung_thuong" : roll<.95?"trung_hiem" : "trung_huyen";
+    this.addEgg(type,1);
+    Snd.win();
+    this.save();
+    this.renderFreeEgg();
+    const achvTxt=this.achvNotify();
+    this.showReward("🎰","TRỨNG MIỄN PHÍ!",
+      `Bạn nhận được ${EGGS[type].c}🥚 <b>${EGGS[type].n}</b>!<br><small>Quay lại sau 20 giờ để nhận trứng miễn phí tiếp theo.</small>${achvTxt}`,
+      ()=>{});
+  },
+  renderFreeEgg(){
+    const box=$("freeEggBox");
+    if(!box) return;
+    if(this.freeEggReady()){
+      box.innerHTML=`<button class="green px" style="width:100%;font-size:10px;padding:12px" onclick="G.claimFreeEgg()">🎰 NHẬN TRỨNG MIỄN PHÍ!</button>`;
+    } else {
+      const ms=this.freeEggRemainMs();
+      const h=Math.floor(ms/3600000), m=Math.floor((ms%3600000)/60000), s=Math.floor((ms%60000)/1000);
+      box.innerHTML=`<div class="center" style="font-size:11px;opacity:.75">⏳ Trứng miễn phí tiếp theo sau: <b>${h}g ${m}p ${s}g</b></div>`;
+    }
+  },
+
+  /* ---------- 🔄 THÁP VÔ TẬN ---------- */
+  openTower(){
+    if(this.badges<TOTAL_LEVELS){ Snd.catchFail(); return; }
+    if(!this.tower) this.tower={floor:1,best:0};
+    this.renderTower();
+    $("towerOverlay").classList.add("active");
+  },
+  renderTower(){
+    $("towerFloorNow").textContent=this.tower.floor;
+    $("towerFloorBest").textContent=this.tower.best;
+    $("towerBtnFloor").textContent=this.tower.floor;
+  },
+  enterTowerBattle(){
+    if(this.badges<TOTAL_LEVELS) return;
+    Snd.select();
+    this.team.forEach(m=>{ m.hp=m.maxHp; resetBattleState(m); });
+    const F=genTowerFloor(this.tower.floor);
+    this.inTower=true;
+    this.closeOverlay("towerOverlay");
+    this.startBattle({wild:false, trainer:F.tr, foeTeam:F.team.map(([sp,lv])=>makeMon(sp,lv)), foeIdx:0});
+  },
+  towerWin(){
+    this.inTower=false;
+    this.battle=null;
+    this.battlesWon=(this.battlesWon||0)+1;
+    this.winStreak=(this.winStreak||0)+1;
+    if(this.winStreak>(this.bestWinStreak||0)) this.bestWinStreak=this.winStreak;
+    this.tower.floor++;
+    if(this.tower.floor-1>this.tower.best) this.tower.best=this.tower.floor-1;
+    this.team.forEach(m=>{ m.hp=m.maxHp; resetBattleState(m); });
+    let loot="";
+    if(Math.random()<.5){ this.charms+=3; loot+="<br>🧧 +3 Bùa"; }
+    if(Math.random()<.3){ this.gems+=1; loot+="<br>🔮 +1 Ngọc"; }
+    if(this.tower.floor%10===1){ this.addEgg("trung_hiem",1); loot+="<br>🥚 +1 Trứng Hiếm (mốc 10 tầng)!"; }
+    this.save();
+    const achvTxt=this.achvNotify();
+    this.showReward("🗼",`VƯỢT QUA TẦNG ${this.tower.floor-1}!`,
+      `Kỷ lục cao nhất: <b>${this.tower.best}</b> tầng${loot}${achvTxt}`,
+      ()=>{ G.renderMap(); G.showScreen("map"); G.openTower(); });
+  },
+  towerLose(){
+    this.inTower=false;
+    this.battle=null;
+    this.winStreak=0;
+    const reached=this.tower.floor;
+    if(reached-1>this.tower.best) this.tower.best=reached-1;
+    this.tower.floor=1;
+    this.team.forEach(m=>{ m.hp=m.maxHp; resetBattleState(m); });
+    this.save();
+    this.showReward("💫","THÁP SỤP ĐỔ...",
+      `Bạn dừng chân ở tầng <b>${reached}</b>.<br>🏆 Kỷ lục cao nhất: <b>${this.tower.best}</b> tầng<br><small>Đội đã hồi đầy máu — hãy quay lại leo tháp bất cứ lúc nào!</small>`,
+      ()=>{ G.renderMap(); G.showScreen("map"); });
   },
   openAchv(){
     const unlocked=Object.keys(this.achv).length;
@@ -1752,6 +2046,47 @@ const G = {
       list.appendChild(row);
     });
     $("achvOverlay").classList.add("active");
+  },
+
+  /* ---------- 📊 HỒ SƠ / THỐNG KÊ ---------- */
+  openProfile(){
+    if(!this.firstPlayDate) this.firstPlayDate=Date.now();
+    const pool=[...this.team,...this.box];
+    const daysSince=Math.max(0,Math.floor((Date.now()-this.firstPlayDate)/86400000));
+    const startDate=new Date(this.firstPlayDate).toLocaleDateString("vi-VN");
+    const dexCaught=Object.keys(this.dex.caught).length, dexSeen=Object.keys(this.dex.seen).length, dexTotal=Object.keys(SPECIES).length;
+    const achvCount=Object.keys(this.achv).length;
+    const catchPct = this.catchAttempts>0 ? Math.round((this.catchSuccess||0)/this.catchAttempts*100) : 0;
+    const bestRank = pool.length ? Math.max(...pool.map(m=>m.rk)) : 0;
+    const shinyCount = pool.filter(m=>m.shiny).length;
+    const eqCount = Object.values(this.items).reduce((a,b)=>a+b,0);
+    let favType="—", favDmg=0;
+    Object.entries(this.typeUsage||{}).forEach(([t,d])=>{ if(d>favDmg){ favDmg=d; favType=t; } });
+
+    const rows=[
+      ["📅","Ngày bắt đầu",`${startDate} · đã đồng hành <b>${daysSince}</b> ngày`],
+      ["🗺️","Vùng đất đã chinh phục",`<b>${this.badges}</b>/${TOTAL_LEVELS} màn`],
+      ["⚔️","Tổng trận thắng",`<b>${this.battlesWon||0}</b> trận`],
+      ["🔥","Chuỗi thắng dài nhất",`<b>${this.bestWinStreak||0}</b> trận liên tiếp <small>(hiện tại: ${this.winStreak||0})</small>`],
+      ["💥","Tổng sát thương đã gây",`<b>${(this.totalDamageDealt||0).toLocaleString("vi-VN")}</b>`],
+      ["🌟","Hệ sở trường",favType!=="—"?`${TYPES[favType]} <b>${favType}</b> <small>(${favDmg.toLocaleString("vi-VN")} sát thương)</small>`:"<i>Chưa có dữ liệu</i>"],
+      ["📖","Sổ Thần Thú",`Đã bắt <b>${dexCaught}</b> · đã gặp <b>${dexSeen}</b> / ${dexTotal} loài`],
+      ["🎣","Tỉ lệ bắt thành công",`<b>${catchPct}%</b> <small>(${this.catchSuccess||0}/${this.catchAttempts||0} lần)</small>`],
+      ["🥚","Trứng đã mở",`<b>${this.eggsOpened||0}</b> quả`],
+      ["🕊️","Đã thả về tự nhiên",`<b>${this.releasedCount||0}</b> thú`],
+      ["🏆","Thành tựu",`<b>${achvCount}</b>/${ACHIEVEMENTS.length}`],
+      ["🔄","Kỷ lục Tháp Vô Tận",this.tower&&this.tower.best?`Tầng <b>${this.tower.best}</b>`:"<i>Chưa mở khóa</i>"],
+      ["📅","Chuỗi điểm danh",`<b>${(this.checkin&&this.checkin.streak)||0}</b> ngày`],
+      ["💎","Thú đang sở hữu",`<b>${pool.length}</b> con · phẩm cao nhất: ${bestRank?RANKS[bestRank].c+" "+RANKS[bestRank].n:"—"}`],
+      ["✨","Shiny đang sở hữu",`<b>${shinyCount}</b> con`],
+      ["🎒","Trang bị đang sở hữu",`<b>${eqCount}</b> món`]
+    ];
+    $("profileBody").innerHTML=rows.map(([icon,label,val])=>
+      `<div style="display:flex;gap:8px;align-items:flex-start;background:var(--giay-toi);border:2px solid var(--muc);border-radius:5px;padding:8px">
+        <div style="font-size:18px">${icon}</div>
+        <div style="flex:1"><b class="px" style="font-size:9px">${label}</b><br>${val}</div>
+      </div>`).join("");
+    $("profileOverlay").classList.add("active");
   },
 
 
@@ -1847,8 +2182,8 @@ const G = {
           onclick="G.rollMove(${i},${slot})">🎲</button></div>`;
     }).join("");
     $("detailPanel").innerHTML=`
-      <div class="center" style="font-size:54px">${s.e}</div>
-      <h2>${s.n}</h2>
+      <div class="center" style="font-size:54px">${dispSprite(m)}</div>
+      <h2>${m.shiny?"✨ ":""}${s.n}${m.shiny?" ✨":""}</h2>
       <div class="center" style="font-size:12px">${TYPES[s.t]} Hệ ${s.t} · Cấp ${m.lvl} · KN ${m.xp}/${m.xpNext}</div>
       <div class="center" style="font-size:12px">Phẩm cấp cá thể: ${RANKS[m.rk].c} <b>${RANKS[m.rk].n}</b> <small>(chỉ số ×${RANK_MULT[m.rk]})</small></div>
       <div style="background:var(--giay-toi);border:2px solid var(--muc);border-radius:5px;padding:8px;font-size:12px;line-height:1.6;text-align:left">
@@ -1886,7 +2221,8 @@ const G = {
         <div style="font-size:12px;line-height:1.6">${mvList}</div>
       </div>
       <div class="center" style="font-size:12px">${evoLine}</div>
-      <button class="red" style="font-size:8px" onclick="G.releaseMon(${i})" id="releaseBtn">${this.releaseArm?"⚠️ CHẠM LẦN NỮA ĐỂ XÁC NHẬN THẢ":"🕊️ THẢ VỀ TỰ NHIÊN"}</button>
+      <button class="${m.locked?"green":"ghost"}" style="font-size:8px" onclick="G.toggleLock(${i})">${m.locked?"🔒 ĐANG KHÓA (chạm để mở)":"🔓 KHÓA THÚ NÀY (chống thả nhầm)"}</button>
+      <button class="red" style="font-size:8px" onclick="G.releaseMon(${i})" id="releaseBtn" ${m.locked?"disabled":""}>${this.releaseArm?"⚠️ CHẠM LẦN NỮA ĐỂ XÁC NHẬN THẢ":m.locked?"🔒 ĐANG BỊ KHÓA":"🕊️ THẢ VỀ TỰ NHIÊN"}</button>
       <button class="ghost" onclick="G.closeDetail()">← ĐỘI HÌNH</button>`;
   },
 
@@ -1909,8 +2245,20 @@ const G = {
   },
 
   /* 🕊️ thả thú về tự nhiên */
+  toggleLock(i){
+    const m=this.team[i];
+    m.locked=!m.locked;
+    Snd.select();
+    this.save();
+    this.renderDetail();
+  },
   releaseMon(i){
     const m=this.team[i], s=SPECIES[m.sp];
+    if(m.locked){
+      Snd.catchFail();
+      this.showReward("🔒","ĐANG BỊ KHÓA!","Thú này đang được bảo vệ khỏi bị thả. Chạm 🔓 để mở khóa trước.",()=>G.renderDetail());
+      return;
+    }
     if(this.team.length<=1){
       Snd.catchFail();
       this.showReward("⚠️","KHÔNG THỂ THẢ!","Đây là thần thú cuối cùng của bạn — không thể thả!",()=>G.renderDetail());
@@ -1921,6 +2269,7 @@ const G = {
     eqItems(m).forEach(it=>this.addItem(it.id,it.rk));
     this.team.splice(i,1);
     this.charms++;
+    this.releasedCount=(this.releasedCount||0)+1;
     Snd.heal();
     this.save();
     $("detailOverlay").classList.remove("active");
@@ -2091,8 +2440,8 @@ const G = {
   renderBattle(){
     const a=this.ally(), f=this.battle.foe;
     const sa=SPECIES[a.sp], sf=SPECIES[f.sp];
-    $("allySprite").textContent=sa.e; $("allyName").textContent=sa.n; $("allyLv").textContent="C."+a.lvl;
-    $("foeSprite").textContent=sf.e; $("foeName").textContent=sf.n; $("foeLv").textContent="C."+f.lvl;
+    $("allySprite").textContent=dispSprite(a); $("allyName").textContent=(a.shiny?"✨":"")+sa.n; $("allyLv").textContent="C."+a.lvl;
+    $("foeSprite").textContent=dispSprite(f); $("foeName").textContent=(f.shiny?"✨":"")+sf.n; $("foeLv").textContent="C."+f.lvl;
     this.updateBars();
   },
   updateBars(){
@@ -2400,6 +2749,11 @@ const G = {
     anyCrit?Snd.crit():Snd.hit();
     this.updateBars();
     att.firstAtk=false;
+    if(byPlayer){
+      this.totalDamageDealt=(this.totalDamageDealt||0)+total;
+      this.typeUsage=this.typeUsage||{};
+      this.typeUsage[sAtt.t]=(this.typeUsage[sAtt.t]||0)+total;
+    }
     let msg = hits>1 ? `Trúng <b>${hits}</b> phát liên hoàn — tổng <b>${total}</b> sát thương!`
                      : `Gây <b>${total}</b> sát thương!`;
     if(anyCrit) msg+=" 💥 Chí mạng!";
@@ -2548,6 +2902,8 @@ const G = {
     } else {
       Snd.lose();
       this.battle=null;
+      this.winStreak=0;
+      if(this.inTower){ this.towerLose(); return; }
       this.losses++;
       this.save();
       const hint=this.losses>=2?"<br><br>🎁 <b>Gói Cứu Trợ miễn phí đã mở khóa!</b>":"";
@@ -2578,6 +2934,7 @@ const G = {
     if(this.busy||this.charms<=0) return;
     this.busy=true; this.lockActions(true);
     this.charms--;
+    this.catchAttempts=(this.catchAttempts||0)+1;
     const f=this.battle.foe, s=SPECIES[f.sp];
     const chance=this.catchChance();
     this.setText(`Ném Bùa Thu Phục vào ${s.n}... 🧧 (tỉ lệ ${this.catchPct()})`);
@@ -2585,13 +2942,14 @@ const G = {
     await sleep(900);
     if(Math.random()<chance){
       this.pity=0;
+      this.catchSuccess=(this.catchSuccess||0)+1;
       Snd.catchOk();
       this.setText(`🎊 Thu phục thành công <b>${s.n}</b>!`);
       await sleep(600);
       f.hp=f.maxHp; resetBattleState(f);
       this.markCaught(f.sp);
       const after=()=>this.afterCatch();
-      const info=`${rankBadge(f)} <b>${s.n}</b> cấp ${f.lvl}<br>Phẩm thú: ${RANKS[f.rk].c} <b>${RANKS[f.rk].n}</b><br>✦ Đặc chất: ${traitsOf(f).map(x=>`${RANKS[x.rk].c}<b>${TRAITS[x.k].n}</b>`).join(", ")}`+this.achvNotify();
+      const info=`${rankBadge(f)} <b>${f.shiny?"✨ ":""}${s.n}${f.shiny?" ✨":""}</b> cấp ${f.lvl}<br>Phẩm thú: ${RANKS[f.rk].c} <b>${RANKS[f.rk].n}</b><br>✦ Đặc chất: ${traitsOf(f).map(x=>`${RANKS[x.rk].c}<b>${TRAITS[x.k].n}</b>`).join(", ")}${f.shiny?"<br>✨ <b>BIẾN THỂ HIẾM (SHINY)!</b> ✨":""}`+this.achvNotify();
       if(this.team.length<6){ this.team.push(f); this.save();
         this.showReward(s.e,"THU PHỤC THÀNH CÔNG!",info+"<br>Đã gia nhập đội hình!",after);
       } else if(this.box.length<100){ this.box.push(f); this.save();
@@ -2639,6 +2997,7 @@ const G = {
 
   winBattle(){
     Snd.win();
+    if(this.inTower){ this.towerWin(); return; }
     const isBoss=this.curStage===STAGES_PER_LEVEL-1;
     this.advanceStage(isBoss);
   },
@@ -2659,7 +3018,7 @@ const G = {
       const mon=makeMon(sp,lvl);
       mon.rk=Math.max(mon.rk,E.floor); recalc(mon); mon.hp=mon.maxHp;
       this.markCaught(sp);
-      const line=`${RANKS[mon.rk].c} ${SPECIES[sp].e} <b>${SPECIES[sp].n}</b> C.${lvl} · ${traitsOf(mon).map(x=>"✦"+RANKS[x.rk].c+TRAITS[x.k].n).join(" ")}`;
+      const line=`${RANKS[mon.rk].c} ${dispSprite(mon)} <b>${mon.shiny?"✨":""}${SPECIES[sp].n}${mon.shiny?"✨":""}</b> C.${lvl} · ${traitsOf(mon).map(x=>"✦"+RANKS[x.rk].c+TRAITS[x.k].n).join(" ")}`;
       if(this.team.length<6){ this.team.push(mon); lines.push(line+" → đội"); }
       else if(this.box.length<100){ this.box.push(mon); lines.push(line+" → 📦"); }
       else { overflow++; this.charms+=2; this.gems+=1; }
@@ -2701,13 +3060,18 @@ const G = {
       curLevelCache:this.curLevelCache,touchMode:this.touchMode,
       losses:this.losses,rescue:this.rescue,
       dex:this.dex,achv:this.achv,battlesWon:this.battlesWon,eggsOpened:this.eggsOpened,
-      presets:this.presets,speed:this.speed});
+      presets:this.presets,speed:this.speed,checkin:this.checkin,
+      freeEgg:this.freeEgg,tower:this.tower,
+      totalDamageDealt:this.totalDamageDealt,typeUsage:this.typeUsage,
+      winStreak:this.winStreak,bestWinStreak:this.bestWinStreak,
+      catchAttempts:this.catchAttempts,catchSuccess:this.catchSuccess,
+      releasedCount:this.releasedCount,firstPlayDate:this.firstPlayDate});
     Store.set(d);
     return d;
   },
   clearSave(){ Store.del(); this.saved=null; },
   normalizeMon(m){
-    const d={bAtk:1,bDef:1,bSpd:1,revived:false,warded:false,rolled:false,pts:0,eq:{},
+    const d={bAtk:1,bDef:1,bSpd:1,revived:false,warded:false,rolled:false,pts:0,eq:{},shiny:false,locked:false,
       crit:0,acc:0,eva:0,res:0,
       alloc:{hp:0,atk:0,def:0,spd:0,crit:0,acc:0,eva:0,res:0}};
     const out={...d,...m}; out.alloc={...d.alloc,...(m.alloc||{})};
@@ -2743,9 +3107,18 @@ const G = {
     this.battlesWon=s.battlesWon||0; this.eggsOpened=s.eggsOpened||0;
     this.presets=s.presets||{A:null,B:null,C:null};
     this.speed=s.speed||1; BATTLE_SPEED=this.speed;
+    this.checkin=s.checkin||{lastDate:null,streak:0};
+    this.freeEgg=s.freeEgg||{lastClaim:0};
+    this.tower=s.tower||{floor:1,best:0};
+    this.totalDamageDealt=s.totalDamageDealt||0; this.typeUsage=s.typeUsage||{};
+    this.winStreak=s.winStreak||0; this.bestWinStreak=s.bestWinStreak||0;
+    this.catchAttempts=s.catchAttempts||0; this.catchSuccess=s.catchSuccess||0;
+    this.releasedCount=s.releasedCount||0;
+    this.firstPlayDate=s.firstPlayDate||Date.now(); // save cũ chưa có: bắt đầu tính từ hôm nay
     // hồi tố: save cũ chưa có sổ thần thú -> đánh dấu đã bắt/đã gặp dựa trên đội + kho hiện có
     [...this.team,...this.box].forEach(m=>this.markCaught(m.sp));
     this.renderMap(); this.showScreen("map");
+    this.checkDailyLogin();
   },
   async boot(){
     this.initGestures();
@@ -2838,6 +3211,8 @@ const G = {
   advanceStage(bossWin){
     this.battle=null;
     this.battlesWon=(this.battlesWon||0)+1;
+    this.winStreak=(this.winStreak||0)+1;
+    if(this.winStreak>(this.bestWinStreak||0)) this.bestWinStreak=this.winStreak;
     this.team.forEach(m=>{ m.hp=m.maxHp; resetBattleState(m); });
     setTimeout(()=>this.save(),0);
     if(bossWin){
