@@ -105,6 +105,7 @@ button:focus-visible{outline:3px dashed var(--troi); outline-offset:2px}
 .statbar{background:var(--giay-do); border:3px solid var(--muc); border-radius:4px;
   padding:6px 8px; min-width:174px; text-align:left}
 .statbar .nm{font-family:var(--px); font-size:8px; display:flex; justify-content:space-between; gap:8px; line-height:1.5}
+.statbar .rankline{font-family:var(--px); font-size:9px; line-height:1.5; margin-bottom:3px; color:var(--muc)}
 .statbar .traitline{font-size:9px; line-height:1.35; color:var(--do-dieu); font-weight:bold; margin-bottom:2px; white-space:normal}
 .statbar .mods{font-size:10px; min-height:12px}
 .hpwrap{background:var(--muc); border-radius:3px; height:10px; margin-top:4px; padding:2px}
@@ -206,6 +207,7 @@ button:focus-visible{outline:3px dashed var(--troi); outline-offset:2px}
     <div class="arena">
       <div class="combatant" id="foeBox">
         <div class="statbar">
+          <div class="rankline" id="foeRank"></div>
           <div class="traitline" id="foeTraits"></div>
           <div class="nm"><span id="foeName"></span><span id="foeLv"></span></div>
           <div class="hpwrap"><div class="hp" id="foeHp"></div></div>
@@ -216,6 +218,7 @@ button:focus-visible{outline:3px dashed var(--troi); outline-offset:2px}
       <div class="combatant" id="allyBox">
         <div class="sprite" id="allySprite"></div>
         <div class="statbar">
+          <div class="rankline" id="allyRank"></div>
           <div class="traitline" id="allyTraits"></div>
           <div class="nm"><span id="allyName"></span><span id="allyLv"></span></div>
           <div class="hpwrap"><div class="hp" id="allyHp"></div></div>
@@ -2468,6 +2471,8 @@ const G = {
     const sa=SPECIES[a.sp], sf=SPECIES[f.sp];
     $("allySprite").textContent=dispSprite(a); $("allyName").textContent=(a.shiny?"✨":"")+sa.n; $("allyLv").textContent="C."+a.lvl;
     $("foeSprite").textContent=dispSprite(f); $("foeName").textContent=(f.shiny?"✨":"")+sf.n; $("foeLv").textContent="C."+f.lvl;
+    $("allyRank").textContent=`${rankBadge(a)} ${RANKS[a.rk].n}`;
+    $("foeRank").textContent=`${rankBadge(f)} ${RANKS[f.rk].n}`;
     const traitLine=m=>traitsOf(m).map(x=>`✦${RANKS[x.rk].c}${TRAITS[x.k].n}`).join(" ");
     $("allyTraits").textContent=traitLine(a);
     $("foeTraits").textContent=traitLine(f);
