@@ -105,6 +105,7 @@ button:focus-visible{outline:3px dashed var(--troi); outline-offset:2px}
 .statbar{background:var(--giay-do); border:3px solid var(--muc); border-radius:4px;
   padding:6px 8px; min-width:174px; text-align:left}
 .statbar .nm{font-family:var(--px); font-size:8px; display:flex; justify-content:space-between; gap:8px; line-height:1.5}
+.statbar .traitline{font-size:9px; line-height:1.35; color:var(--do-dieu); font-weight:bold; margin-bottom:2px; white-space:normal}
 .statbar .mods{font-size:10px; min-height:12px}
 .hpwrap{background:var(--muc); border-radius:3px; height:10px; margin-top:4px; padding:2px}
 .hp{background:var(--xanh-com); height:100%; border-radius:2px; transition:width .4s}
@@ -205,6 +206,7 @@ button:focus-visible{outline:3px dashed var(--troi); outline-offset:2px}
     <div class="arena">
       <div class="combatant" id="foeBox">
         <div class="statbar">
+          <div class="traitline" id="foeTraits"></div>
           <div class="nm"><span id="foeName"></span><span id="foeLv"></span></div>
           <div class="hpwrap"><div class="hp" id="foeHp"></div></div>
           <div class="mods" id="foeMods"></div>
@@ -214,6 +216,7 @@ button:focus-visible{outline:3px dashed var(--troi); outline-offset:2px}
       <div class="combatant" id="allyBox">
         <div class="sprite" id="allySprite"></div>
         <div class="statbar">
+          <div class="traitline" id="allyTraits"></div>
           <div class="nm"><span id="allyName"></span><span id="allyLv"></span></div>
           <div class="hpwrap"><div class="hp" id="allyHp"></div></div>
           <div class="xpwrap"><div class="xp" id="allyXp"></div></div>
@@ -231,6 +234,7 @@ button:focus-visible{outline:3px dashed var(--troi); outline-offset:2px}
   <div class="overlay" id="teamOverlay">
     <div class="panel">
       <h2 id="teamTitle">ĐỘI HÌNH</h2>
+      <div id="teamTotalCP" class="center px" style="font-size:11px;color:var(--do-dieu)"></div>
       <button class="px" id="autoTeamBtn" style="display:none;font-size:8px" onclick="G.autoTeam()">🏅 XẾP ĐỘI TỐT NHẤT (TỰ ĐỘNG)</button>
       <div id="teamList"></div>
       <button class="px" id="boxBtn" style="display:none;font-size:8px" onclick="G.openBox()">📦 KHO DỰ BỊ</button>
@@ -1121,6 +1125,19 @@ function effSpd(m){
   return s*(eqMod(m,"spd")||1);
 }
 
+/* ⚡ LỰC CHIẾN: chỉ số tổng hợp duy nhất phản ánh sức mạnh thực (đã tính trang bị/đặc chất/phẩm),
+   dùng giá trị ỔN ĐỊNH (không phụ thuộc HP hiện tại/trạng thái buff tạm thời trong trận) để hiển thị ngoài trận. */
+function combatPower(m){
+  const atkEff = m.atk*(eqMod(m,"atk")||1);
+  const defEff = m.def*(eqMod(m,"def")||1);
+  let spdEff = m.spd*(eqMod(m,"spd")||1);
+  if(tRank(m,"than_toc")) spdEff*=1+tVal(m,"than_toc")/100;
+  const critEff = (m.crit||0) + (eqMod(m,"crit")||0)*100;
+  const secondary = critEff + (m.acc||0) + (m.eva||0) + (m.res||0);
+  const cp = m.maxHp*0.45 + atkEff*2.2 + defEff*1.8 + spdEff*1.6 + secondary*1.2;
+  return Math.max(1, Math.round(cp));
+}
+
 function applyExpSilent(m, exp){
   m.xp+=exp;
   while(m.xp>=m.xpNext){
@@ -1241,7 +1258,11 @@ const ACHIEVEMENTS=[
   {id:"shiny_1",e:"✨",n:"Ánh Sáng Đầu Tiên",d:"Sở hữu 1 thần thú biến thể hiếm (Shiny)",
     cond:G=>[...G.team,...G.box].some(m=>m.shiny), reward:{gems:8}},
   {id:"shiny_5",e:"🌟",n:"Săn Ánh Sáng",d:"Sở hữu 5 thần thú biến thể hiếm (Shiny)",
-    cond:G=>[...G.team,...G.box].filter(m=>m.shiny).length>=5, reward:{gems:20}}
+    cond:G=>[...G.team,...G.box].filter(m=>m.shiny).length>=5, reward:{gems:20}},
+  {id:"cp_2000",e:"⚡",n:"Lực Chiến Ngàn Cân",d:"Sở hữu 1 thần thú đạt Lực Chiến từ 2.000 trở lên",
+    cond:G=>[...G.team,...G.box].some(m=>combatPower(m)>=2000), reward:{gems:10}},
+  {id:"cp_team_15000",e:"💪",n:"Đội Hình Vạn Năng",d:"Tổng Lực Chiến cả đội đạt từ 15.000 trở lên",
+    cond:G=>G.team.reduce((s,m)=>s+combatPower(m),0)>=15000, reward:{gems:20,books:8}}
 ];
 
 /* ================= ĐIỂM DANH & THƯỞNG QUAY LẠI ================= */
@@ -1484,6 +1505,8 @@ const G = {
   openTeam(inBattle){
     const list=$("teamList"); list.innerHTML="";
     $("teamTitle").textContent=inBattle?"CHỌN LINH THÚ RA TRẬN":"ĐỘI HÌNH (chạm để đưa lên đầu) · sắp theo phẩm cao→thấp";
+    const totalCP=this.team.reduce((sum,m)=>sum+combatPower(m),0);
+    $("teamTotalCP").textContent=`⚡ Tổng Lực Chiến Đội: ${totalCP.toLocaleString("vi-VN")}`;
     /* Hiển thị sắp theo phẩm cấp cao→thấp, nhưng mọi thao tác vẫn dùng ĐÚNG chỉ số gốc trong mảng team
        (không đổi vị trí thật sự — vị trí 0 vẫn là thú xuất trận, chỉ đổi thứ tự NHÌN THẤY) */
     const order=this.team.map((m,i)=>i).sort((a,b)=>this.team[b].rk-this.team[a].rk);
@@ -1493,7 +1516,7 @@ const G = {
       const el=document.createElement("div");
       el.className="team-row"+(m.hp<=0?" fainted":"");
       el.innerHTML=`<div class="sprite">${dispSprite(m)}</div>
-        <div class="info">${rankBadge(m)}${m.locked?"🔒":""} <b>${m.shiny?"✨ ":""}${s.n}</b> ${TYPES[s.t]} &nbsp;Cấp ${m.lvl}<br>
+        <div class="info">${rankBadge(m)}${m.locked?"🔒":""} <b>${m.shiny?"✨ ":""}${s.n}</b> ${TYPES[s.t]} &nbsp;Cấp ${m.lvl} · ⚡${combatPower(m).toLocaleString("vi-VN")}<br>
         <span class="tr">${traitsOf(m).map(x=>`✦${RANKS[x.rk].c}${TRAITS[x.k].n}`).join(" ")}</span><br>
         HP ${m.hp}/${m.maxHp} · ${m.moves.map(k=>MOVES[k].n).join(", ")}
         <div class="minihp"><i style="width:${m.hp/m.maxHp*100}%"></i></div></div>`;
@@ -1537,23 +1560,23 @@ const G = {
     if(!inBattle) this.renderPresets();
     $("teamOverlay").classList.add("active");
   },
-  /* 🏅 Tự động chọn 6 thần thú phẩm cao nhất từ đội + kho, phần còn lại xuống kho */
+  /* 🏅 Tự động chọn 6 thần thú có Lực Chiến cao nhất từ đội + kho, phần còn lại xuống kho */
   autoTeam(){
     const pool=[...this.team,...this.box];
     if(pool.length<=1){ Snd.catchFail(); return; }
-    const power=m=>{ const s=SPECIES[m.sp]; return s.hp+s.atk+s.def+s.spd; };
     const locked=pool.filter(m=>m.locked).slice(0,6);
     const rest=pool.filter(m=>!m.locked);
-    rest.sort((a,b)=> b.rk-a.rk || power(b)-power(a) || b.lvl-a.lvl);
+    rest.sort((a,b)=> combatPower(b)-combatPower(a));
     const needed=Math.max(0,6-locked.length);
     this.team=[...locked, ...rest.slice(0,needed)];
     const usedUids=new Set(this.team.map(m=>m.uid));
     this.box=pool.filter(m=>!usedUids.has(m.uid));
     Snd.win();
     this.save();
+    const totalCP=this.team.reduce((sum,m)=>sum+combatPower(m),0);
     const lockNote=locked.length?`<br><small>🔒 ${locked.length} thú đang khóa được giữ nguyên trong đội.</small>`:"";
     this.showReward("🏅","ĐÃ XẾP ĐỘI TỐI ƯU!",
-      "Đã chọn 6 thần thú phẩm cao nhất (và mạnh nhất khi cùng phẩm) từ đội + kho dự bị. Phần còn lại đã chuyển vào kho."+lockNote,
+      `Đã chọn 6 thần thú có ⚡ Lực Chiến cao nhất từ đội + kho dự bị.<br>Tổng Lực Chiến Đội: <b>${totalCP.toLocaleString("vi-VN")}</b><br>Phần còn lại đã chuyển vào kho.${lockNote}`,
       ()=>{ G.openTeam(false); });
   },
 
@@ -1676,7 +1699,7 @@ const G = {
       const el=document.createElement("div");
       el.className="team-row";
       el.innerHTML=`<div class="sprite">${dispSprite(m)}</div>
-        <div class="info">${RANKS[m.rk].c}${m.locked?"🔒":""} <b>${m.shiny?"✨ ":""}${s.n}</b> ${TYPES[s.t]} · Cấp ${m.lvl}<br>
+        <div class="info">${RANKS[m.rk].c}${m.locked?"🔒":""} <b>${m.shiny?"✨ ":""}${s.n}</b> ${TYPES[s.t]} · Cấp ${m.lvl} · ⚡${combatPower(m).toLocaleString("vi-VN")}<br>
         ${traitsOf(m).map(x=>"✦"+RANKS[x.rk].c+TRAITS[x.k].n).join(" ")}${eqItems(m).length?` · 🎒${eqItems(m).length}`:""}</div>`;
       const btns=document.createElement("div");
       btns.style.cssText="display:flex;flex-direction:column;gap:4px;flex-shrink:0";
@@ -2078,6 +2101,8 @@ const G = {
       ["🔄","Kỷ lục Tháp Vô Tận",this.tower&&this.tower.best?`Tầng <b>${this.tower.best}</b>`:"<i>Chưa mở khóa</i>"],
       ["📅","Chuỗi điểm danh",`<b>${(this.checkin&&this.checkin.streak)||0}</b> ngày`],
       ["💎","Thú đang sở hữu",`<b>${pool.length}</b> con · phẩm cao nhất: ${bestRank?RANKS[bestRank].c+" "+RANKS[bestRank].n:"—"}`],
+      ["⚡","Lực Chiến mạnh nhất",pool.length?`<b>${Math.max(...pool.map(m=>combatPower(m))).toLocaleString("vi-VN")}</b>`:"—"],
+      ["💪","Tổng Lực Chiến Đội",`<b>${this.team.reduce((s2,m)=>s2+combatPower(m),0).toLocaleString("vi-VN")}</b>`],
       ["✨","Shiny đang sở hữu",`<b>${shinyCount}</b> con`],
       ["🎒","Trang bị đang sở hữu",`<b>${eqCount}</b> món`]
     ];
@@ -2185,6 +2210,7 @@ const G = {
       <div class="center" style="font-size:54px">${dispSprite(m)}</div>
       <h2>${m.shiny?"✨ ":""}${s.n}${m.shiny?" ✨":""}</h2>
       <div class="center" style="font-size:12px">${TYPES[s.t]} Hệ ${s.t} · Cấp ${m.lvl} · KN ${m.xp}/${m.xpNext}</div>
+      <div class="center px" style="font-size:15px;color:var(--do-dieu)">⚡ LỰC CHIẾN: ${combatPower(m).toLocaleString("vi-VN")}</div>
       <div class="center" style="font-size:12px">Phẩm cấp cá thể: ${RANKS[m.rk].c} <b>${RANKS[m.rk].n}</b> <small>(chỉ số ×${RANK_MULT[m.rk]})</small></div>
       <div style="background:var(--giay-toi);border:2px solid var(--muc);border-radius:5px;padding:8px;font-size:12px;line-height:1.6;text-align:left">
         <div class="px" style="font-size:8px;margin-bottom:4px">✦ ĐẶC CHẤT (${traitsOf(m).length} ô) · Ngọc: <b>${this.gems}</b> 🔮 — chọn ô muốn quay</div>
@@ -2442,6 +2468,9 @@ const G = {
     const sa=SPECIES[a.sp], sf=SPECIES[f.sp];
     $("allySprite").textContent=dispSprite(a); $("allyName").textContent=(a.shiny?"✨":"")+sa.n; $("allyLv").textContent="C."+a.lvl;
     $("foeSprite").textContent=dispSprite(f); $("foeName").textContent=(f.shiny?"✨":"")+sf.n; $("foeLv").textContent="C."+f.lvl;
+    const traitLine=m=>traitsOf(m).map(x=>`✦${RANKS[x.rk].c}${TRAITS[x.k].n}`).join(" ");
+    $("allyTraits").textContent=traitLine(a);
+    $("foeTraits").textContent=traitLine(f);
     this.updateBars();
   },
   updateBars(){
